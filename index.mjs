@@ -102,7 +102,7 @@ function daysUntilChristmas() {
 
 async function getScriptFromGemini(prompt) {
   const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" +
+    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=" +
       process.env.GEMINI_API_KEY,
     {
       method: "POST",
@@ -119,15 +119,14 @@ async function getScriptFromGemini(prompt) {
 
   const data = await res.json();
 
-  // Handle valid response shapes
   if (data.candidates?.[0]?.content?.[0]?.parts?.[0]?.text) {
     return data.candidates[0].content[0].parts[0].text;
   }
 
-  // Log and return null on failure
   console.error("Gemini returned no usable script:", JSON.stringify(data, null, 2));
   return null;
 }
+
 
 
 
@@ -198,7 +197,11 @@ async function run() {
 
   const prompt = buildPrompt({ weather, history });
   const script = await getScriptFromGemini(prompt);
-  if (script.includes("Gemini returned an error")) {
+  if (!script) {
+  console.error("Gemini returned no script. Skipping episode.");
+  return;
+}
+
   console.error("Skipping MP3 generation due to Gemini error.");
   return; // stop the workflow
 }
