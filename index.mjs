@@ -118,6 +118,7 @@ function daysUntilChristmas() {
 // STEP 3: Call Google Gemini
 // ------------------------------
 
+
 async function getScriptFromGemini(prompt) {
   const res = await fetch(
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" +
@@ -137,8 +138,23 @@ async function getScriptFromGemini(prompt) {
 
   const data = await res.json();
 
-  // New Gemini response format:
-  return data.candidates[0].content[0].parts[0].text;
+  // Defensive parsing: handle all Gemini response shapes
+  try {
+    // Newest format
+    if (data.candidates?.[0]?.content?.[0]?.parts?.[0]?.text) {
+      return data.candidates[0].content[0].parts[0].text;
+    }
+
+    // Older format
+    if (data.candidates?.[0]?.output_text) {
+      return data.candidates[0].output_text;
+    }
+
+    // Fallback: dump entire response for debugging
+    return JSON.stringify(data, null, 2);
+  } catch (err) {
+    return "Gemini returned an unexpected response format.";
+  }
 }
 
 
