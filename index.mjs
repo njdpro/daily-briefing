@@ -194,6 +194,11 @@ async function run() {
 
   const prompt = buildPrompt({ weather, history });
   const script = await getScriptFromGemini(prompt);
+  if (script.includes("Gemini returned an error")) {
+  console.error("Skipping MP3 generation due to Gemini error.");
+  return; // stop the workflow
+}
+
 
   const mp3 = await textToSpeech(script);
   const filename = saveMP3(mp3);
