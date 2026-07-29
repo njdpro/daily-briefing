@@ -101,7 +101,7 @@ function daysUntilChristmas() {
 
 async function getScriptFromGemini(prompt) {
   const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=" +
+    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" +
       process.env.GEMINI_API_KEY,
     {
       method: "POST",
@@ -125,6 +125,7 @@ async function getScriptFromGemini(prompt) {
   console.error("Gemini returned no usable script:", JSON.stringify(data, null, 2));
   return null;
 }
+
 
 
 
