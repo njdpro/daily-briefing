@@ -199,6 +199,8 @@ async function run() {
   const prompt = buildPrompt({ weather, history });
   const script = await getScriptFromGemini(prompt);
 
+  console.log("SCRIPT:", script);   // <-- THIS is the correct place
+
   // If Gemini failed, stop the workflow
   if (!script) {
     console.error("Gemini returned no script. Skipping episode.");
@@ -213,4 +215,4 @@ async function run() {
   updateRSS(filename);
 }
 
-run(console.log("SCRIPT:", script););
+run();
