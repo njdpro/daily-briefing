@@ -1,1 +1,38 @@
+name: Daily Podcast Generator
+
+on:
+  workflow_dispatch:    # allows manual run (for today's episode)
+  schedule:
+    - cron: "0 11 * * *"   # 6:00 AM Central = 11:00 UTC
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: npm install node-fetch@3 luxon
+
+    - name: Run generator
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+        GITHUB_USERNAME: "njdpro"
+      run: node index.js
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add .
+        git commit -m "Daily podcast update" || echo "No changes to commit"
+        git push
 
