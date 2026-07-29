@@ -124,9 +124,11 @@ async function getScriptFromGemini(prompt) {
     return data.candidates[0].content[0].parts[0].text;
   }
 
-  console.error("Gemini error:", JSON.stringify(data, null, 2));
-  return "Gemini returned an error generating the script.";
+  if (!script || script.trim().length < 10) {
+  console.error("Gemini returned no usable script. Skipping episode.");
+  return;
 }
+
 
 
 
