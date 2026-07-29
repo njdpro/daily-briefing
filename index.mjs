@@ -47,23 +47,22 @@ async function getWeather() {
 
 async function getSP500() {
   const res = await fetch(
-    "https://api.stlouisfed.org/fred/series/observations?series_id=SP500&api_key=guest&file_type=json"
+    "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d"
   );
 
   const data = await res.json();
-  const observations = data.observations;
 
-  // Get the last two trading days
-  const latest = observations[observations.length - 1];
-  const previous = observations[observations.length - 2];
+  const result = data.chart.result[0];
+  const meta = result.meta;
 
-  const latestClose = parseFloat(latest.value);
-  const previousClose = parseFloat(previous.value);
+  const previousClose = meta.chartPreviousClose;
+  const currentPrice = result.indicators.quote[0].close[0];
 
-  const percentChange = ((latestClose - previousClose) / previousClose) * 100;
+  const percentChange = ((currentPrice - previousClose) / previousClose) * 100;
 
   return `${percentChange.toFixed(2)}%`;
 }
+
 
 
 async function getTodayInHistory() {
