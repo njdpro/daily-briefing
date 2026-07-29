@@ -213,4 +213,4 @@ async function run() {
   updateRSS(filename);
 }
 
-run();
+run(console.log("SCRIPT:", script););
