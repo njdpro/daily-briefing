@@ -120,19 +120,27 @@ function daysUntilChristmas() {
 
 async function getScriptFromGemini(prompt) {
   const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateText?key=" +
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" +
       process.env.GEMINI_API_KEY,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        prompt: { text: prompt }
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
       })
     }
   );
 
   const data = await res.json();
-  return data.candidates[0].output_text;
+
+  // New Gemini response format:
+  return data.candidates[0].content[0].parts[0].text;
+}
+
 }
 
 // ------------------------------
