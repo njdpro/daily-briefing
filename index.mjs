@@ -121,7 +121,7 @@ function daysUntilChristmas() {
 
 async function getScriptFromGemini(prompt) {
   const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" +
       process.env.GEMINI_API_KEY,
     {
       method: "POST",
@@ -138,14 +138,12 @@ async function getScriptFromGemini(prompt) {
 
   const data = await res.json();
 
-  // Handle all valid response shapes
+  // Handle valid response shapes
   if (data.candidates?.[0]?.content?.[0]?.parts?.[0]?.text) {
     return data.candidates[0].content[0].parts[0].text;
   }
 
-  // Log the error so you can see it in GitHub Actions
   console.error("Gemini error:", JSON.stringify(data, null, 2));
-
   return "Gemini returned an error generating the script.";
 }
 
