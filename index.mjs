@@ -151,7 +151,9 @@ async function getScriptFromGemini(prompt) {
     }
 
     // Fallback: dump entire response for debugging
-    return JSON.stringify(data, null, 2);
+    console.error("Gemini error:", JSON.stringify(data, null, 2));
+return "Gemini returned an error generating the script.";
+
   } catch (err) {
     return "Gemini returned an unexpected response format.";
   }
