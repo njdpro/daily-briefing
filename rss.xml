@@ -5,44 +5,7 @@
   <link>https://your-bucket-url.com/podcast/</link>
   <description>Your automated daily morning radio show.</description>
 
-  <item>
-    <title>Davis Briefing — July 29, 2026</title>
-    <enclosure url="https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3" type="audio/mpeg" />
-    <pubDate>Wed, 29 Jul 2026 17:42:09 GMT</pubDate>
-    <guid>https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3</guid>
-  </item>
-  
 
-  <item>
-    <title>Davis Briefing — July 29, 2026</title>
-    <enclosure url="https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3" type="audio/mpeg" />
-    <pubDate>Wed, 29 Jul 2026 17:52:57 GMT</pubDate>
-    <guid>https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3</guid>
-  </item>
-  
-
-  <item>
-    <title>Davis Briefing — July 29, 2026</title>
-    <enclosure url="https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3" type="audio/mpeg" />
-    <pubDate>Wed, 29 Jul 2026 17:56:31 GMT</pubDate>
-    <guid>https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3</guid>
-  </item>
-  
-
-  <item>
-    <title>Davis Briefing — July 29, 2026</title>
-    <enclosure url="https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3" type="audio/mpeg" />
-    <pubDate>Wed, 29 Jul 2026 17:58:32 GMT</pubDate>
-    <guid>https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3</guid>
-  </item>
-  
-
-  <item>
-    <title>Davis Briefing — July 29, 2026</title>
-    <enclosure url="https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3" type="audio/mpeg" />
-    <pubDate>Wed, 29 Jul 2026 18:27:59 GMT</pubDate>
-    <guid>https://njdpro.github.io/davis-family-briefing/episode-2026-07-29.mp3</guid>
-  </item>
   
 </channel>
 </rss>
