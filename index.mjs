@@ -8,21 +8,63 @@ import { DateTime } from "luxon";
 
 async function getWeather() {
   const res = await fetch(
-    "https://api.weatherapi.com/v1/forecast.json?key=YOUR_WEATHER_API_KEY&q=Lawrence,KS&days=1"
+    "https://api.open-meteo.com/v1/forecast?latitude=38.9717&longitude=-95.2353&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=America/Chicago"
   );
+
   const data = await res.json();
-  const f = data.forecast.forecastday[0].day;
-  return `High ${f.maxtemp_f}°F, low ${f.mintemp_f}°F, ${f.condition.text}`;
+
+  const high = data.daily.temperature_2m_max[0];
+  const low = data.daily.temperature_2m_min[0];
+  const code = data.daily.weathercode[0];
+
+  const conditions = {
+    0: "Clear sky",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Depositing rime fog",
+    51: "Light drizzle",
+    53: "Moderate drizzle",
+    55: "Dense drizzle",
+    61: "Slight rain",
+    63: "Moderate rain",
+    65: "Heavy rain",
+    71: "Slight snow",
+    73: "Moderate snow",
+    75: "Heavy snow",
+    80: "Rain showers",
+    81: "Moderate rain showers",
+    82: "Violent rain showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with hail",
+    99: "Severe thunderstorm with hail"
+  };
+
+  return `High ${high}°F, low ${low}°F, ${conditions[code] || "Unknown conditions"}`;
 }
+
 
 async function getSP500() {
   const res = await fetch(
-    "https://api.marketstack.com/v1/eod/latest?access_key=YOUR_MARKETSTACK_KEY&symbols=^GSPC"
+    "https://api.stlouisfed.org/fred/series/observations?series_id=SP500&api_key=guest&file_type=json"
   );
+
   const data = await res.json();
-  const change = data.data[0].change_percent;
-  return `${change.toFixed(2)}%`;
+  const observations = data.observations;
+
+  // Get the last two trading days
+  const latest = observations[observations.length - 1];
+  const previous = observations[observations.length - 2];
+
+  const latestClose = parseFloat(latest.value);
+  const previousClose = parseFloat(previous.value);
+
+  const percentChange = ((latestClose - previousClose) / previousClose) * 100;
+
+  return `${percentChange.toFixed(2)}%`;
 }
+
 
 async function getTodayInHistory() {
   const res = await fetch("https://history.muffinlabs.com/date");
