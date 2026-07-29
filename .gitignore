@@ -1,0 +1,22 @@
+# Node dependencies
+node_modules/
+
+# Lockfiles (GitHub Actions installs fresh each run)
+package-lock.json
+
+# Build artifacts
+*.mp3
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS junk
+.DS_Store
+Thumbs.db
