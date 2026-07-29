@@ -46,22 +46,45 @@ async function getWeather() {
 
 
 async function getSP500() {
-  const res = await fetch(
-    "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d"
-  );
+  const res = await fetch("YOUR_S_AND_P_API_URL_HERE");
 
-  const data = await res.json();
+  // If the API rate-limits or fails, return a safe fallback
+  if (!res.ok) {
+    console.error("S&P API error:", await res.text());
+    return {
+      change: "unavailable",
+      percent: "unavailable",
+      latest: "unavailable"
+    };
+  }
 
-  const result = data.chart.result[0];
-  const meta = result.meta;
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    console.error("S&P JSON parse error:", err);
+    return {
+      change: "unavailable",
+      percent: "unavailable",
+      latest: "unavailable"
+    };
+  }
 
-  const previousClose = meta.chartPreviousClose;
-  const currentPrice = result.indicators.quote[0].close[0];
+  // Your normal parsing logic here
+  const observations = data.observations;
+  const latest = observations[observations.length - 1];
+  const previous = observations[observations.length - 2];
 
-  const percentChange = ((currentPrice - previousClose) / previousClose) * 100;
+  const change = (latest.value - previous.value).toFixed(2);
+  const percent = ((change / previous.value) * 100).toFixed(2);
 
-  return `${percentChange.toFixed(2)}%`;
+  return {
+    change,
+    percent,
+    latest: latest.value
+  };
 }
+
 
 
 
