@@ -127,7 +127,7 @@ async function getScriptFromGemini(prompt) {
   if (!script || script.trim().length < 10) {
   console.error("Gemini returned no usable script. Skipping episode.");
   return;
-}
+  }
 
 
 
