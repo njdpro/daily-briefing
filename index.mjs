@@ -141,7 +141,7 @@ async function getScriptFromGemini(prompt) {
   return data.candidates[0].content[0].parts[0].text;
 }
 
-}
+
 
 // ------------------------------
 // STEP 4: Convert script to MP3
