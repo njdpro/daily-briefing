@@ -45,47 +45,6 @@ async function getWeather() {
 }
 
 
-async function getSP500() {
-  const res = await fetch("YOUR_S_AND_P_API_URL_HERE");
-
-  // If the API rate-limits or fails, return a safe fallback
-  if (!res.ok) {
-    console.error("S&P API error:", await res.text());
-    return {
-      change: "unavailable",
-      percent: "unavailable",
-      latest: "unavailable"
-    };
-  }
-
-  let data;
-  try {
-    data = await res.json();
-  } catch (err) {
-    console.error("S&P JSON parse error:", err);
-    return {
-      change: "unavailable",
-      percent: "unavailable",
-      latest: "unavailable"
-    };
-  }
-
-  // Your normal parsing logic here
-  const observations = data.observations;
-  const latest = observations[observations.length - 1];
-  const previous = observations[observations.length - 2];
-
-  const change = (latest.value - previous.value).toFixed(2);
-  const percent = ((change / previous.value) * 100).toFixed(2);
-
-  return {
-    change,
-    percent,
-    latest: latest.value
-  };
-}
-
-
 
 
 async function getTodayInHistory() {
@@ -109,7 +68,6 @@ INTRO
 Good morning, Davis family.
 Today is ${today}.
 Weather in Lawrence, KS: ${weather}.
-S&P 500 change since previous open: ${sp500}.
 Today in History: ${history.join(" ")}.
 
 MAIN NEWS
@@ -232,7 +190,6 @@ function updateRSS(filename) {
 
 async function run() {
   const weather = await getWeather();
-  const sp500 = await getSP500();
   const history = await getTodayInHistory();
 
   const prompt = buildPrompt({ weather, sp500, history });
