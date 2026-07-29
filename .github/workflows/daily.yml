@@ -26,7 +26,7 @@ jobs:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
         GITHUB_USERNAME: "njdpro"
-      run: node index.js
+      run: node index.mjs
 
     - name: Commit and push changes
       run: |
