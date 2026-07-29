@@ -57,7 +57,7 @@ async function getTodayInHistory() {
 // STEP 2: Build your daily prompt
 // ------------------------------
 
-function buildPrompt({ weather, sp500, history }) {
+function buildPrompt({ weather, history }) {
   const today = DateTime.now().toFormat("MMMM d, yyyy");
 
   return `
@@ -192,7 +192,7 @@ async function run() {
   const weather = await getWeather();
   const history = await getTodayInHistory();
 
-  const prompt = buildPrompt({ weather, sp500, history });
+  const prompt = buildPrompt({ weather, history });
   const script = await getScriptFromGemini(prompt);
 
   const mp3 = await textToSpeech(script);
