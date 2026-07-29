@@ -124,10 +124,11 @@ async function getScriptFromGemini(prompt) {
     return data.candidates[0].content[0].parts[0].text;
   }
 
-  if (!data.candidates || !data.candidates.length) {
-  console.error("Gemini returned no usable script. Skipping episode.");
+  // Log and return null on failure
+  console.error("Gemini returned no usable script:", JSON.stringify(data, null, 2));
   return null;
 }
+
 
 
 
