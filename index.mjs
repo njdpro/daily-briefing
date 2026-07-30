@@ -285,7 +285,7 @@ function updateRSS(filename) {
 
   const item = `
   <item>
-    <title>Davis Briefing — ${DateTime.now().toFormat("MMMM d, yyyy")}</title>
+    <title>Davis Briefing — ${DateTime.now().setZone("America/Chicago").toFormat("MMMM d, yyyy")}</title>
     <enclosure url="${url}" type="audio/mpeg" />
     <pubDate>${new Date().toUTCString()}</pubDate>
     <guid>${url}</guid>
