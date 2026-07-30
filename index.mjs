@@ -8,36 +8,16 @@ import { DateTime } from "luxon";
 
 async function fetchRSS(url) {
   const res = await fetch(url);
-  const text = await res.text();
+  const xml = await res.text();
 
   const items = [];
-  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-  let match;
+  const rawItems = xml.split("<item>").slice(1); // skip header
 
-  while ((match = itemRegex.exec(text)) !== null) {
-    const item = match[1];
+  for (const raw of rawItems) {
+    const item = raw.split("</item>")[0];
 
-    const titleMatch = item.match(/<title>(<!
-
-\[CDATA
-
-\[)?([\s\S]*?)(\]
-
-\]
-
->)?<\/title>/);
-    const descMatch = item.match(/<description>(<!
-
-\[CDATA
-
-\[)?([\s\S]*?)(\]
-
-\]
-
->)?<\/description>/);
-
-    const title = titleMatch ? titleMatch[2].trim() : null;
-    const description = descMatch ? descMatch[2].trim() : null;
+    const title = extractTag(item, "title");
+    const description = extractTag(item, "description");
 
     if (title) {
       items.push({ title, description });
@@ -46,6 +26,26 @@ async function fetchRSS(url) {
 
   return items;
 }
+
+function extractTag(xml, tag) {
+  const open = `<${tag}>`;
+  const close = `</${tag}>`;
+
+  const start = xml.indexOf(open);
+  const end = xml.indexOf(close);
+
+  if (start === -1 || end === -1) return null;
+
+  let content = xml.substring(start + open.length, end).trim();
+
+  // Remove CDATA if present
+  if (content.startsWith("<![CDATA[")) {
+    content = content.replace("<![CDATA[", "").replace("]]>", "");
+  }
+
+  return content.trim();
+}
+
 
 async function getCategoryHeadlines() {
   const feeds = {
