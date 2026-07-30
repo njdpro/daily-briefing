@@ -271,7 +271,8 @@ async function textToSpeech(text) {
 // ------------------------------------------------------------
 
 function saveMP3(buffer) {
-  const filename = `episode-${DateTime.now().toFormat("yyyy-MM-dd")}.mp3`;
+  const filename = `episode-${DateTime.now().setZone("America/Chicago").toFormat("yyyy-MM-dd")}.mp3`;
+
   fs.writeFileSync(`./${filename}`, buffer);
   return filename;
 }
