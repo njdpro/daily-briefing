@@ -127,4 +127,73 @@ async function getScriptFromCohere(prompt) {
 // ------------------------------
 
 async function textToSpeech(text) {
-  const res = await
+  const res = await fetch(
+    "https://texttospeech.googleapis.com/v1/text:synthesize?key=" +
+      process.env.GOOGLE_TTS_API_KEY,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: { text },
+        voice: { languageCode: "en-US", name: "en-US-Neural2-C" },
+        audioConfig: { audioEncoding: "MP3" }
+      })
+    }
+  );
+
+  const data = await res.json();
+  return Buffer.from(data.audioContent, "base64");
+}
+
+// ------------------------------
+// STEP 5: Save MP3 + Update RSS
+// ------------------------------
+
+function saveMP3(buffer) {
+  const filename = `episode-${DateTime.now().toFormat("yyyy-MM-dd")}.mp3`;
+  fs.writeFileSync(`./${filename}`, buffer);
+  return filename;
+}
+
+function updateRSS(filename) {
+  const rssPath = "./rss.xml";
+  let rss = fs.readFileSync(rssPath, "utf8");
+
+  const url = `https://njdpro.github.io/davis-family-briefing/${filename}`;
+
+  const item = `
+  <item>
+    <title>Davis Briefing — ${DateTime.now().toFormat("MMMM d, yyyy")}</title>
+    <enclosure url="${url}" type="audio/mpeg" />
+    <pubDate>${new Date().toUTCString()}</pubDate>
+    <guid>${url}</guid>
+  </item>
+  `;
+
+  rss = rss.replace("</channel>", `${item}\n</channel>`);
+  fs.writeFileSync(rssPath, rss);
+}
+
+// ------------------------------
+// MAIN RUNNER
+// ------------------------------
+
+async function run() {
+  const weather = await getWeather();
+  const history = await getTodayInHistory();
+
+  const prompt = buildPrompt({ weather, history });
+  const script = await getScriptFromCohere(prompt);
+
+  if (!script) {
+    console.error("Cohere returned no script. Skipping episode.");
+    return;
+  }
+
+  const mp3 = await textToSpeech(script);
+  const filename = saveMP3(mp3);
+
+  updateRSS(filename);
+}
+
+run();
