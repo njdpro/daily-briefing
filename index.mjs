@@ -161,7 +161,7 @@ function updateRSS(filename) {
   const rssPath = "./rss.xml";
   let rss = fs.readFileSync(rssPath, "utf8");
 
-  const url = `https://njdpro.github.io/davis-family-briefing/${filename}`;
+  const url = `https://njdpro.github.io/daily-briefing/${filename}`;
 
   const item = `
   <item>
