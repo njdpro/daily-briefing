@@ -2,15 +2,103 @@ import fs from "fs";
 import fetch from "node-fetch";
 import { DateTime } from "luxon";
 
-// ------------------------------
-// STEP 1: Fetch real data
-// ------------------------------
+// ------------------------------------------------------------
+// Simple RSS parsing (title + description)
+// ------------------------------------------------------------
+
+async function fetchRSS(url) {
+  const res = await fetch(url);
+  const text = await res.text();
+
+  const items = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+
+  while ((match = itemRegex.exec(text)) !== null) {
+    const item = match[1];
+
+    const titleMatch = item.match(/<title>(<!
+
+\[CDATA
+
+\[)?([\s\S]*?)(\]
+
+\]
+
+>)?<\/title>/);
+    const descMatch = item.match(/<description>(<!
+
+\[CDATA
+
+\[)?([\s\S]*?)(\]
+
+\]
+
+>)?<\/description>/);
+
+    const title = titleMatch ? titleMatch[2].trim() : null;
+    const description = descMatch ? descMatch[2].trim() : null;
+
+    if (title) {
+      items.push({ title, description });
+    }
+  }
+
+  return items;
+}
+
+async function getCategoryHeadlines() {
+  const feeds = {
+    global: {
+      url: "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
+      limit: 2
+    },
+    us: {
+      url: "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en",
+      limit: 2
+    },
+    china: {
+      url: "https://news.google.com/rss/search?q=China&hl=en-US&gl=US&ceid=US:en",
+      limit: 2
+    },
+    kansas: {
+      url: "https://news.google.com/rss/search?q=Kansas&hl=en-US&gl=US&ceid=US:en",
+      limit: 1
+    },
+    chiefs: {
+      url: "https://news.google.com/rss/search?q=Kansas+City+Chiefs&hl=en-US&gl=US&ceid=US:en",
+      limit: 1
+    },
+    lawrence: {
+      url: "https://news.google.com/rss/search?q=Lawrence+Kansas&hl=en-US&gl=US&ceid=US:en",
+      limit: 1
+    }
+  };
+
+  const result = {};
+
+  for (const [key, cfg] of Object.entries(feeds)) {
+    try {
+      const items = await fetchRSS(cfg.url);
+      result[key] = items.slice(0, cfg.limit);
+    } catch (e) {
+      console.error(`Failed to fetch RSS for ${key}:`, e);
+      result[key] = [];
+    }
+  }
+
+  return result;
+}
+
+// ------------------------------------------------------------
+// Weather + History
+// ------------------------------------------------------------
 
 async function getWeather() {
-  const res = await fetch(
-    "https://api.open-meteo.com/v1/forecast?latitude=38.9717&longitude=-95.2353&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=America/Chicago"
-  );
+  const url =
+    "https://api.open-meteo.com/v1/forecast?latitude=38.9717&longitude=-95.2353&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=America/Chicago";
 
+  const res = await fetch(url);
   const data = await res.json();
 
   const high = data.daily.temperature_2m_max[0];
@@ -50,83 +138,114 @@ async function getTodayInHistory() {
   return data.data.Events.slice(0, 3).map(e => e.text);
 }
 
-// ------------------------------
-// STEP 2: Build your daily prompt
-// ------------------------------
-
-function buildPrompt({ weather, history }) {
-  const today = DateTime.now().toFormat("MMMM d, yyyy");
-
-  return `
-Act as a radio news writer creating a 10–15 minute morning briefing for the Davis family.
-Tone: straight-forward, professional, calm, with very brief sardonic one-liners.
-
-INTRO
-Good morning, Davis family.
-Today is ${today}.
-Weather in Lawrence, KS: ${weather}.
-Today in History: ${history.join(" ")}.
-
-MAIN NEWS
-International Conflicts (1–2 updates)
-China (Top 2 stories)
-United States (Top 2 stories)
-American Real Estate (Top story)
-Kansas City Chiefs (1 update)
-Lawrence, KS (Local update)
-
-SECONDARY SEGMENT
-Dinner Recommendation (paleo-ish)
-Movies & Cinema (news + recommendation)
-Men’s Wellness (new research)
-
-OUTRO
-There are ${daysUntilChristmas()} days until Christmas.
-I'll see you tomorrow.
-`;
-}
+// ------------------------------------------------------------
+// Prompt Builder (with real headlines)
+// ------------------------------------------------------------
 
 function daysUntilChristmas() {
   const now = DateTime.now();
-  const christmas = DateTime.fromObject({ month: 12, day: 25, year: now.year });
+  const christmas = DateTime.fromObject({
+    month: 12,
+    day: 25,
+    year: now.year
+  });
   return Math.round(christmas.diff(now, "days").days);
 }
 
-// ------------------------------
-// STEP 3: Cohere Script Generator
-// ------------------------------
+function formatHeadlinesSection(title, items) {
+  if (!items || items.length === 0) return `${title}: No current headlines available.\n`;
+
+  let out = `${title}:\n`;
+  for (const item of items) {
+    out += `- Headline: ${item.title}\n`;
+    if (item.description) {
+      out += `  Description: ${item.description}\n`;
+    }
+  }
+  return out + "\n";
+}
+
+function buildPrompt({ weather, history, headlines }) {
+  const today = DateTime.now().toFormat("MMMM d, yyyy");
+
+  const historyText = history.join(" ");
+
+  const globalSection = formatHeadlinesSection("Global News (emphasize conflicts and tensions)", headlines.global);
+  const usSection = formatHeadlinesSection("United States News (include political, economic, and social tensions)", headlines.us);
+  const chinaSection = formatHeadlinesSection("China News (focus on geopolitical conflicts, economic competition, and regional tensions)", headlines.china);
+  const kansasSection = formatHeadlinesSection("Kansas News (state-level politics, economy, and notable events)", headlines.kansas);
+  const chiefsSection = formatHeadlinesSection("Kansas City Chiefs News (team updates, games, injuries, contracts)", headlines.chiefs);
+  const lawrenceSection = formatHeadlinesSection("Lawrence, KS News (local government, community events, schools, crime)", headlines.lawrence);
+
+  return `
+You are a radio news writer creating a 10–15 minute morning briefing for the Davis family.
+Tone: straight-forward, professional, calm, with very brief sardonic one-liners.
+Each story should consist of:
+1) The headline (read clearly)
+2) A concise summarization of key details
+For international and national stories (Global, US, China), emphasize global conflicts, geopolitical tensions, and power struggles.
+
+INTRO
+Write a short intro that:
+- Greets the Davis family
+- States the date: ${today}
+- States the weather in Lawrence, KS: ${weather}
+- Mentions "Today in History" using: ${historyText}
+
+MAIN NEWS
+Use the following real headlines and descriptions. For each category:
+- Read each headline
+- Then summarize key details in 2–4 sentences
+- For Global, US, and China, emphasize conflicts, tensions, and stakes
+- Keep the tone professional, with occasional dry, sardonic asides
+
+${globalSection}
+${usSection}
+${chinaSection}
+${kansasSection}
+${chiefsSection}
+${lawrenceSection}
+
+SECONDARY SEGMENT
+After the news, add:
+- A paleo-ish dinner recommendation for tonight
+- A brief movies & cinema segment (news + one recommendation)
+- A short men's wellness segment (recent research or practical advice)
+
+OUTRO
+End with:
+- "There are ${daysUntilChristmas()} days until Christmas."
+- A short, warm sign-off like "I'll see you tomorrow."
+`;
+}
+
+// ------------------------------------------------------------
+// Cohere Script Generator
+// ------------------------------------------------------------
 
 async function getScriptFromCohere(prompt) {
   const res = await fetch("https://api.cohere.com/v2/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.COHERE_API_KEY}`
+      Authorization: `Bearer ${process.env.COHERE_API_KEY}`
     },
     body: JSON.stringify({
       model: "command-r-plus-08-2024",
-      messages: [
-        { role: "user", content: prompt }
-      ]
+      messages: [{ role: "user", content: prompt }]
     })
   });
 
   const data = await res.json();
-
   console.log("COHERE RAW:", JSON.stringify(data, null, 2));
 
   const text = data?.message?.content?.[0]?.text;
-  if (text && text.trim().length > 0) {
-    return text;
-  }
-
-  console.error("Cohere returned no usable script:", JSON.stringify(data, null, 2));
-  return null;
+  return text?.trim() || null;
 }
 
-// ------------------------------
-// STEP 4: Convert script to MP3
-// ------------------------------
+// ------------------------------------------------------------
+// Text-to-Speech
+// ------------------------------------------------------------
 
 async function textToSpeech(text) {
   const res = await fetch(
@@ -147,9 +266,9 @@ async function textToSpeech(text) {
   return Buffer.from(data.audioContent, "base64");
 }
 
-// ------------------------------
-// STEP 5: Save MP3 + Update RSS
-// ------------------------------
+// ------------------------------------------------------------
+// Save MP3 + Update RSS
+// ------------------------------------------------------------
 
 function saveMP3(buffer) {
   const filename = `episode-${DateTime.now().toFormat("yyyy-MM-dd")}.mp3`;
@@ -176,16 +295,19 @@ function updateRSS(filename) {
   fs.writeFileSync(rssPath, rss);
 }
 
-// ------------------------------
-// MAIN RUNNER
-// ------------------------------
+// ------------------------------------------------------------
+// Main Runner
+// ------------------------------------------------------------
 
 async function run() {
   const weather = await getWeather();
   const history = await getTodayInHistory();
+  const headlines = await getCategoryHeadlines();
 
-  const prompt = buildPrompt({ weather, history });
+  const prompt = buildPrompt({ weather, history, headlines });
   const script = await getScriptFromCohere(prompt);
+
+  console.log("SCRIPT:", script);
 
   if (!script) {
     console.error("Cohere returned no script. Skipping episode.");
