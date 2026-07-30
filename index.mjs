@@ -44,9 +44,6 @@ async function getWeather() {
   return `High ${high}°F, low ${low}°F, ${conditions[code] || "Unknown conditions"}`;
 }
 
-
-
-
 async function getTodayInHistory() {
   const res = await fetch("https://history.muffinlabs.com/date");
   const data = await res.json();
@@ -96,7 +93,7 @@ function daysUntilChristmas() {
 }
 
 // ------------------------------
-// STEP 3: Call Google Gemini
+// STEP 3: Cohere Script Generator
 // ------------------------------
 
 async function getScriptFromCohere(prompt) {
@@ -116,7 +113,6 @@ async function getScriptFromCohere(prompt) {
 
   const data = await res.json();
 
-  // Extract Cohere text
   const text = data?.message?.content?.[0]?.text;
   if (text && text.trim().length > 0) {
     return text;
@@ -126,96 +122,9 @@ async function getScriptFromCohere(prompt) {
   return null;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 // ------------------------------
 // STEP 4: Convert script to MP3
 // ------------------------------
 
 async function textToSpeech(text) {
-  const res = await fetch(
-    "https://texttospeech.googleapis.com/v1/text:synthesize?key=" +
-      process.env.GOOGLE_TTS_API_KEY,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input: { text },
-        voice: { languageCode: "en-US", name: "en-US-Neural2-C" },
-        audioConfig: { audioEncoding: "MP3" }
-      })
-    }
-  );
-
-  const data = await res.json();
-  return Buffer.from(data.audioContent, "base64");
-}
-
-// ------------------------------
-// STEP 5: Save MP3 + Update RSS
-// ------------------------------
-
-function saveMP3(buffer) {
-  const filename = `episode-${DateTime.now().toFormat("yyyy-MM-dd")}.mp3`;
-  const path = `./${filename}`;
-  fs.writeFileSync(path, buffer);
-  return filename;
-}
-
-function updateRSS(filename) {
-  const rssPath = "./rss.xml";
-  let rss = fs.readFileSync(rssPath, "utf8");
-
-  const url = `https://njdpro.github.io/davis-family-briefing/${filename}`;
-
-  const item = `
-  <item>
-    <title>Daily Briefing — ${DateTime.now().toFormat("MMMM d, yyyy")}</title>
-    <enclosure url="${url}" type="audio/mpeg" />
-    <pubDate>${new Date().toUTCString()}</pubDate>
-    <guid>${url}</guid>
-  </item>
-  `;
-
-  rss = rss.replace("</channel>", `${item}\n</channel>`);
-  fs.writeFileSync(rssPath, rss);
-}
-
-// ------------------------------
-// MAIN RUNNER
-// ------------------------------
-
-async function run() {
-  const weather = await getWeather();
-  const history = await getTodayInHistory();
-
-  const prompt = buildPrompt({ weather, history });
-  const script = await getScriptFromCohere(prompt);
-
-
-  console.log("SCRIPT:", script);   // <-- THIS is the correct place
-
-  // If Cohere failed, stop the workflow
-  if (!script) {
-    console.error("Cohere returned no script. Skipping episode.");
-    return;
-  }
-
-  // Convert script to MP3
-  const mp3 = await textToSpeech(script);
-  const filename = saveMP3(mp3);
-
-  // Update RSS
-  updateRSS(filename);
-}
-
-run();
+  const res = await
