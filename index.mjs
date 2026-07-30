@@ -113,6 +113,8 @@ async function getScriptFromCohere(prompt) {
 
   const data = await res.json();
 
+  console.log("COHERE RAW:", JSON.stringify(data, null, 2));
+
   const text = data?.message?.content?.[0]?.text;
   if (text && text.trim().length > 0) {
     return text;
