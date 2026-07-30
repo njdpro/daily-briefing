@@ -23,8 +23,9 @@ jobs:
 
     - name: Run generator
       env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+  COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+  GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+
         GITHUB_USERNAME: "njdpro"
       run: node index.mjs
 
