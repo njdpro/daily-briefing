@@ -99,32 +99,33 @@ function daysUntilChristmas() {
 // STEP 3: Call Google Gemini
 // ------------------------------
 
-async function getScriptFromGemini(prompt) {
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" +
-      process.env.GEMINI_API_KEY,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ]
-      })
-    }
-  );
+async function getScriptFromCohere(prompt) {
+  const res = await fetch("https://api.cohere.com/v2/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.COHERE_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "command-r-plus-08-2024",
+      messages: [
+        { role: "user", content: prompt }
+      ]
+    })
+  });
 
   const data = await res.json();
 
-  if (data.candidates?.[0]?.content?.[0]?.parts?.[0]?.text) {
-    return data.candidates[0].content[0].parts[0].text;
+  // Extract Cohere text
+  const text = data?.message?.content?.[0]?.text;
+  if (text && text.trim().length > 0) {
+    return text;
   }
 
-  console.error("Gemini returned no usable script:", JSON.stringify(data, null, 2));
+  console.error("Cohere returned no usable script:", JSON.stringify(data, null, 2));
   return null;
 }
+
 
 
 
@@ -178,7 +179,7 @@ function updateRSS(filename) {
 
   const item = `
   <item>
-    <title>Davis Briefing — ${DateTime.now().toFormat("MMMM d, yyyy")}</title>
+    <title>Daily Briefing — ${DateTime.now().toFormat("MMMM d, yyyy")}</title>
     <enclosure url="${url}" type="audio/mpeg" />
     <pubDate>${new Date().toUTCString()}</pubDate>
     <guid>${url}</guid>
@@ -198,13 +199,14 @@ async function run() {
   const history = await getTodayInHistory();
 
   const prompt = buildPrompt({ weather, history });
-  const script = await getScriptFromGemini(prompt);
+  const script = await getScriptFromCohere(prompt);
+
 
   console.log("SCRIPT:", script);   // <-- THIS is the correct place
 
-  // If Gemini failed, stop the workflow
+  // If Cohere failed, stop the workflow
   if (!script) {
-    console.error("Gemini returned no script. Skipping episode.");
+    console.error("Cohere returned no script. Skipping episode.");
     return;
   }
 
