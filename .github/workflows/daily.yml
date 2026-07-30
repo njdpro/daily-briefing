@@ -1,7 +1,7 @@
 name: Daily Podcast Generator
 
 on:
-  workflow_dispatch:    # allows manual run (for today's episode)
+  workflow_dispatch:
   schedule:
     - cron: "0 11 * * *"   # 6:00 AM Central = 11:00 UTC
 
@@ -21,11 +21,10 @@ jobs:
     - name: Install dependencies
       run: npm install node-fetch@3 luxon
 
-    - name: Run generator
+    - name: Run daily briefing
       env:
-  COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
-  GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
-
+        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+        GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
         GITHUB_USERNAME: "njdpro"
       run: node index.mjs
 
@@ -36,4 +35,3 @@ jobs:
         git add .
         git commit -m "Daily podcast update" || echo "No changes to commit"
         git push
-
