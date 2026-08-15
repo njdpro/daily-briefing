@@ -73,5 +73,13 @@
     <guid>https://njdpro.github.io/daily-briefing/episode-test.mp3</guid>
   </item>
   
+
+  <item>
+    <title>Davis Briefing — August 15, 2026</title>
+    <enclosure url="https://njdpro.github.io/daily-briefing/episode-test.mp3" type="audio/mpeg" />
+    <pubDate>Sat, 15 Aug 2026 11:40:45 GMT</pubDate>
+    <guid>https://njdpro.github.io/daily-briefing/episode-test.mp3</guid>
+  </item>
+  
 </channel>
 </rss>
