@@ -169,5 +169,13 @@
     <guid>https://njdpro.github.io/daily-briefing/episode-test.mp3</guid>
   </item>
   
+
+  <item>
+    <title>Davis Briefing — September 4, 2026</title>
+    <enclosure url="https://njdpro.github.io/daily-briefing/episode-test.mp3" type="audio/mpeg" />
+    <pubDate>Fri, 04 Sep 2026 14:39:22 GMT</pubDate>
+    <guid>https://njdpro.github.io/daily-briefing/episode-test.mp3</guid>
+  </item>
+  
 </channel>
 </rss>
